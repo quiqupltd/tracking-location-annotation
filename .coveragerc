@@ -1,0 +1,16 @@
+[run]
+branch = True
+omit = 
+    *tests*
+    *__main__*
+    *resources/script.py
+    *sink/csv_sink.py
+    *sink/memory_sink.py
+    *data/bq_consumer.py
+    *common/benchmark.py
+    *google_cloud_storage.py
+    *flow.py
+
+[report]
+fail_under = 80
+show_missing = True

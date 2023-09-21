@@ -1,0 +1,13 @@
+pandas==1.4.1
+google-cloud-bigquery[bqstorage,pandas]==2.34.0
+python-dotenv==0.19.2
+tqdm==4.64.0
+metaflow==2.6.0
+pandas-stubs==1.2.0.57
+google-cloud-storage==2.3.0
+kubernetes==23.6.0
+# test
+pytest==7.1.1
+pytest-cov==3.0.0
+mypy==0.942
+testfixtures==6.18.3

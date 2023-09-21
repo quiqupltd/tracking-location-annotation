@@ -1,0 +1,19 @@
+name: python-${USER}
+image: python:3.9
+workdir: /app
+sync:
+  - .:/app
+context: data
+namespace: development
+autocreate: true
+command: bash
+volumes:
+  - /usr/local/lib/python3.9/site-packages
+resources:
+  requests:
+    memory: "20Gi"
+    cpu: "4"
+  limits:
+    memory: "20Gi"
+    cpu: "4"
+

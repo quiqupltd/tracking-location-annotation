@@ -1,0 +1,86 @@
+# Quiqup Autodevops
+image: alpine:latest
+
+variables:
+  KUBERNETES_VERSION: 1.11.10
+  HELM_VERSION: 2.14.1
+  DOCKER_DRIVER: overlay2
+  ROLLOUT_RESOURCE_TYPE: deployment
+  GIT_SUBMODULE_STRATEGY: normal
+
+  ##
+  # Use simple release names instead of with the environment
+  # this is added to not break older releases
+  SIMPLE_RELEASE_NAME: "true"
+
+  ## Features
+  # TEST_DISABLED: "true"
+  TAG_GIT_ENABLED: "true"
+  CODE_QUALITY_DISABLED: "true"
+  LICENSE_MANAGEMENT_DISABLED: "true"
+  PERFORMANCE_DISABLED: "true"
+  SAST_DISABLED: "true"
+  DEPENDENCY_SCANNING_DISABLED: "true"
+  CONTAINER_SCANNING_DISABLED: "true"
+  DAST_DISABLED: "true"
+  STAGING_ENABLED: "true"
+  QA_ENABLED: "true"
+  # CANARY_ENABLED: "true"
+  REVIEW_DISABLED: "true"
+
+  ## Per app name (required)
+  #
+  # will be the first part of the order:
+  # review/qa": APP_NAME.dev.quiq.ly
+  # staging: APP_NAME.staging.quiqup.com
+  # production: PROD_APP_NAME.quiqup.com
+  APP_NAME: tracking-location-annotation
+  PROD_APP_NAME: tracking-location-annotation
+
+stages:
+  - test
+  - tag_git
+  - dast
+
+include:
+  - &ci_include
+    project: internal/devops/ci-templates
+    ref: master
+    file: "/Jobs/Tag-Git.gitlab-ci.yml"
+  - <<: *ci_include
+    file: "/Jobs/Code-Quality.gitlab-ci.yml"
+  - <<: *ci_include
+    file: "/Security/DAST.gitlab-ci.yml"
+  - <<: *ci_include
+    file: "/Security/Dependency-Scanning.gitlab-ci.yml"
+  - <<: *ci_include
+    file: "/Security/License-Management.gitlab-ci.yml"
+  - <<: *ci_include
+    file: "/Security/SAST.gitlab-ci.yml"
+
+test:
+  stage: test
+  image: continuumio/miniconda3:4.10.3
+  services:
+    - $DIND_IMAGE
+  before_script:
+    - conda install -c conda-forge mamba
+    - mamba env update --file conda.yaml
+    - conda init bash
+    - source $HOME/.bashrc
+    - conda activate tracking-location-annotation
+  script:
+    - mypy tracking_location_annotation
+    - pytest --cov tracking_location_annotation tracking_location_annotation/tests
+  coverage: "/TOTAL.+ ([0-9]{1,3}%)/"
+  except:
+    variables:
+      - $TEST_DISABLED
+
+# Override DAST job to exclude master branch
+dast:
+  except:
+    refs:
+      - master
+
+      
